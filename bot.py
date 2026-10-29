@@ -11,32 +11,28 @@ GROUP_LINK = "https://t.me/+TH2UW0jyWthlM2U0"
 app = Flask(__name__)
 bot = telebot.TeleBot(BOT_TOKEN, threaded=False)
 
-HTML_MINI_APP = f"""
-<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+# Stockage simple en mémoire
+users = {}
+
+HTML_PAGE = f"""
+<!DOCTYPE html><html><head><meta charset="UTF-8">
 <meta name="monetag" content="3d6f80bc1545f19f62998e82de8b3455">
-<title>Cash Pub V8</title><script src="https://telegram.org/js/telegram-web-app.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cash Pub</title>
 <script src="https://quge5.com/88/tag.min.js" data-zone="303312" async data-cfasync="false"></script>
-<style>*{{box-sizing:border-box}}body{{background:#0f1115;color:#fff;font-family:Arial,sans-serif;margin:0;padding:12px}} .card{{background:#1a1f2e;border-radius:20px;padding:18px;margin-bottom:12px;border:1px solid #232a3d}} .solde{{font-size:48px;font-weight:900;color:#4a7bff}} .btn-main{{background:linear-gradient(135deg,#4a7bff,#6a5cff);width:100%;padding:18px;border:none;border-radius:16px;color:white;font-size:18px;font-weight:900;margin:8px 0;cursor:pointer}} .btn-task{{background:#1a2a1f;border:1px solid #2d6a4f;width:100%;padding:14px;border-radius:14px;color:#4ade80;font-size:14px;font-weight:bold;margin:6px 0;display:flex;justify-content:space-between}} .btn-task.done{{background:#232a3d;color:#8a90a5}} .btn-sec{{background:#232a3d;width:100%;padding:14px;border:none;border-radius:14px;color:#8a90a5;margin:6px 0}} #pub-overlay{{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.95);z-index:999;flex-direction:column;align-items:center;justify-content:center;padding:20px}} .timer{{font-size:90px;font-weight:900;color:#4a7bff}} .progress{{width:90%;height:10px;background:#232a3d;border-radius:10px;margin-top:15px;overflow:hidden}} .bar{{height:100%;background:#4a7bff;width:100%}} .lock{{background:#2a1f1f;border:1px solid #6a2a2a;border-radius:14px;padding:12px;margin:10px 0;font-size:12px;line-height:1.6}}</style>
-</head><body>
-<div id="pub-overlay"><div class="timer" id="count">30</div><div>+50 F dans <span id="c2">30</span>s</div><div class="progress"><div class="bar" id="bar"></div></div></div>
-<div style="display:flex;justify-content:space-between;padding:8px 4px"><b>💰 CASH PUB V8 STABLE</b><span style="background:#232a3d;padding:5px 10px;border-radius:20px;font-size:11px">👥 <span id="par">0</span>/5</span></div>
-<div class="card"><div style="color:#8a90a5;font-size:11px">TON SOLDE</div><div class="solde" id="solde">0 F</div><div style="display:flex;gap:7px;margin-top:12px"><div style="background:#232a3d;border-radius:12px;padding:10px;flex:1;text-align:center"><b id="total">0</b><br><span style="font-size:8px">TOTAL GAGNÉ</span></div><div style="background:#232a3d;border-radius:12px;padding:10px;flex:1;text-align:center"><b id="pubs">0</b><br><span style="font-size:8px">PUBS VUES</span></div><div style="background:#232a3d;border-radius:12px;padding:10px;flex:1;text-align:center"><b id="par2">0</b><br><span style="font-size:8px">FILLEULS</span></div></div><div id="lockInfo"></div></div>
-<button class="btn-main" onclick="regarderPub()">▶ REGARDER UNE PUB • +50 F</button>
-<div class="card"><b>📋 TÂCHES OBLIGATOIRES POUR RETRAIT</b><button class="btn-task" id="taskGroup" onclick="doTaskGroup()"><span>📢 Rejoindre groupe privé (obligatoire)</span><span id="tgText">+100 F >></span></button><button class="btn-task" onclick="invite()"><span>👥 Inviter 5 amis (500F / ami)</span><span id="invText">0/5</span></button><button class="btn-task"><span>💰 Atteindre 30.000 F</span><span id="soldeTask">0/30000</span></button></div>
-<button class="btn-sec" onclick="invite()">🔗 Mon Lien Parrainage - 500F/ami</button><button class="btn-sec" onclick="retirer()">💵 DEMANDER RETRAIT 30.000F</button>
-<script>
-let solde=parseInt(localStorage.getItem('solde')||'0');let pubs=parseInt(localStorage.getItem('pubs')||'0');let total=parseInt(localStorage.getItem('total')||'0');let parrainages=parseInt(localStorage.getItem('parrainages')||'0');let taskGroupDone=localStorage.getItem('taskGroupDone')==='true';const DIRECT_LINKS=["https://uplcm.com/4/12147475","https://uplcm.com/4/12147480"];const GROUP_LINK="{GROUP_LINK}";
-function refreshUI(){{document.getElementById('solde').innerText=solde+' F';document.getElementById('pubs').innerText=pubs;document.getElementById('total').innerText=total+' F';document.getElementById('par').innerText=parrainages;document.getElementById('par2').innerText=parrainages;document.getElementById('invText').innerText=parrainages+'/5';document.getElementById('soldeTask').innerText=solde+'/30000';let lockDiv=document.getElementById('lockInfo');if(parrainages<5||solde<30000||!taskGroupDone){{lockDiv.innerHTML=`<div class="lock">🔒 RETRAIT BLOQUÉ:<br>${{taskGroupDone?'✅':'❌'}} Groupe privé<br>${{parrainages>=5?'✅':'❌'}} Parrainages: ${{parrainages}}/5<br>${{solde>=30000?'✅':'❌'}} Solde: ${{solde}}/30000 F</div>`;}}else{{lockDiv.innerHTML=`<div style="background:#1e3a2e;border-radius:12px;padding:10px;margin-top:10px;color:#4ade80;font-size:12px">✅ BRAVO ! Tu peux retirer tes ${{solde}} F !</div>`;}}if(taskGroupDone){{document.getElementById('taskGroup').classList.add('done');document.getElementById('tgText').innerText='✅ Fait +100F';}}}}
-refreshUI();
-function doTaskGroup(){{if(taskGroupDone){{alert("Déjà fait ✅");return;}}window.open(GROUP_LINK,"_blank");setTimeout(()=>{{if(confirm("As-tu rejoint le groupe privé ? Clique OK pour +100F")){{taskGroupDone=true;solde+=100;total+=100;localStorage.setItem('taskGroupDone','true');localStorage.setItem('solde',solde);localStorage.setItem('total',total);refreshUI();}}}},2000);}}
-function regarderPub(){{window.open(DIRECT_LINKS[pubs%2],"_blank");let overlay=document.getElementById('pub-overlay');overlay.style.display='flex';let count=30;let timer=setInterval(()=>{{count--;document.getElementById('count').innerText=count;document.getElementById('c2').innerText=count;document.getElementById('bar').style.width=(count/30*100)+'%';if(count==15){{window.open(DIRECT_LINKS[1],"_blank");}}if(count<=0){{clearInterval(timer);overlay.style.display='none';solde+=50;pubs+=1;total+=50;localStorage.setItem('solde',solde);localStorage.setItem('pubs',pubs);localStorage.setItem('total',total);refreshUI();}}}},1000);}}
-function invite(){{let refCode=localStorage.getItem('myRef')||Math.floor(Math.random()*90000+10000);localStorage.setItem('myRef',refCode);let link="https://t.me/GainsFacilesCI_bot?start=ref_"+refCode;prompt("Copie ton lien parrainage (500F par ami):",link);}}
-function retirer(){{if(!taskGroupDone){{alert("❌ Tu dois d'abord rejoindre le groupe privé");return;}}if(parrainages<5){{alert("❌ Il faut 5 filleuls, tu as "+parrainages+"/5");return;}}if(solde<30000){{alert("❌ Solde insuffisant: "+solde+"/30000 F. Regarde des pubs et invite des amis !");return;}}let num=prompt("Entre ton numéro Wave / MTN / Orange pour recevoir "+solde+" F:");if(num){{alert("✅ Demande de retrait envoyée !\\n\\nMontant: "+solde+" F\\nNuméro: "+num+"\\n\\nPaiement sous 24h-48h");solde=0;localStorage.setItem('solde',0);refreshUI();}}}}
-if(window.Telegram&&Telegram.WebApp){{Telegram.WebApp.ready();Telegram.WebApp.expand();}}
-</script></body></html>
+</head><body style="background:#0f1115;color:white;text-align:center;padding:50px;font-family:Arial">
+<h1>💰 Cash Pub Bot est en ligne</h1>
+<p>Monetag Zone 303312 active</p>
+<p>Direct Links actifs</p>
+</body></html>
 """
 
-def menu_reply():
+def get_user(uid, name="Jean"):
+    if uid not in users:
+        users[uid] = {"nom": name, "solde": 1050, "tickets": 0, "amis": 5, "pubs": 264}
+    return users[uid]
+
+def menu_principal():
     markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
     markup.add("👤 Mon Compte", "📺 Regarde une Pub")
     markup.add("🔗 Inviter des Amis", "🚩 Mes Tâches")
@@ -44,42 +40,70 @@ def menu_reply():
     markup.add("🎮 Mini-Jeux", "📋 Procédure")
     return markup
 
-def inline_webapp():
-    markup = InlineKeyboardMarkup()
-    markup.add(InlineKeyboardButton("🚀 OUVRIR LA MINI APP V8", web_app=WebAppInfo(url=WEBAPP_URL)))
-    markup.add(InlineKeyboardButton("📢 Rejoindre groupe privé", url=GROUP_LINK))
-    return markup
-
 @bot.message_handler(commands=['start'])
-def start_cmd(message):
-    bot.send_message(message.chat.id, "👋 Bienvenue Gains Faciles CI - V8 STABLE !\n\n💰 50F / pub\n👥 500F / filleul\n📢 +100F groupe privé\n💸 Retrait 30.000F (5 filleuls)\n\n👇 Menu en bas :", reply_markup=menu_reply())
-    bot.send_message(message.chat.id, "🚀 Clique pour ouvrir ton app :", reply_markup=inline_webapp())
+def start(message):
+    u = get_user(message.from_user.id, message.from_user.first_name)
+    bot.send_message(message.chat.id,
+        f"👋 Ravi de te revoir, {u['nom']} !\n\n"
+        "Prêt à booster tes gains aujourd'hui ?\n"
+        "Accomplis des tâches, regarde des pubs,\n"
+        "joue aux mini-jeux ou invite des amis.\n\n"
+        "👇 Choisis une option dans le menu ci-dessous :",
+        reply_markup=menu_principal())
+
+@bot.message_handler(func=lambda m: m.text and "Mon Compte" in m.text)
+def mon_compte(message):
+    u = get_user(message.from_user.id, message.from_user.first_name)
+    bot.send_message(message.chat.id,
+        f"👤 Nom : {u['nom']}\n\n"
+        f"💰 Solde : {u['solde']:,} FCFA\n"
+        f"🎟️ Tickets disponibles : {u['tickets']}\n"
+        f"👥 Amis invités : {u['amis']}\n"
+        f"📺 Pubs regardées : {u['pubs']}\n\n"
+        f"📌 Retrait possible dès 20000 FCFA.\n"
+        f"💡 Invite des amis pour avancer plus vite.",
+        reply_markup=menu_principal())
+
+@bot.message_handler(func=lambda m: m.text and "Regarde une Pub" in m.text)
+def regarde_pub_text(message):
+    markup = InlineKeyboardMarkup()
+    # Bouton qui ouvre ton Direct Link + Monetag
+    markup.add(InlineKeyboardButton("📺 Regarde", url="https://uplcm.com/4/12147475"))
+    markup.add(InlineKeyboardButton("🚀 Ouvrir Mini App", web_app=WebAppInfo(url=WEBAPP_URL)))
+    bot.send_message(message.chat.id,
+        "📺 Regarde une pub et gagne 50 FCFA à chaque fois.",
+        reply_markup=markup)
+
+@bot.message_handler(func=lambda m: m.text and "Retrait" in m.text)
+def retrait(message):
+    u = get_user(message.from_user.id)
+    if u['solde'] >= 20000:
+        bot.send_message(message.chat.id, f"✅ Tu peux retirer {u['solde']} FCFA ! Envoie ton numéro Wave.")
+    else:
+        bot.send_message(message.chat.id,
+            "🚫 Le retrait est possible à partir de\n"
+            "20,000 FCFA.\n\n"
+            "Invite des amis ou complète des tâches\n"
+            "pour atteindre ce montant 💸",
+            reply_markup=menu_principal())
+
+@bot.message_handler(func=lambda m: m.text and "Inviter" in m.text)
+def inviter(message):
+    bot.send_message(message.chat.id,
+        "🔗 Ton lien d'invitation :\n"
+        f"https://t.me/{bot.get_me().username}?start={message.from_user.id}\n\n"
+        "500 FCFA par ami invité !",
+        reply_markup=menu_principal())
 
 @bot.message_handler(func=lambda m: True)
-def handle_all(message):
-    txt = message.text or ""
-    if "Mon Compte" in txt:
-        bot.send_message(message.chat.id, "👤 MON COMPTE\n\nOuvre la Mini App pour voir solde / pubs / filleuls.\nConditions: Groupe + 5 amis + 30.000F", reply_markup=inline_webapp())
-    elif "Regarde" in txt:
-        bot.send_message(message.chat.id, "📺 REGARDER PUB = +50F\nOuvre la Mini App et clique sur PUB", reply_markup=inline_webapp())
-    elif "Inviter" in txt:
-        bot.send_message(message.chat.id, "🔗 INVITER = 500F / ami\n5 filleuls minimum.\nLien dans la Mini App.", reply_markup=inline_webapp())
-    elif "Tâches" in txt:
-        bot.send_message(message.chat.id, "🚩 TÂCHES:\n1. Rejoindre groupe privé +100F\n2. Inviter 5 amis\n3. Atteindre 30.000F", reply_markup=inline_webapp())
-    elif "Retrait" in txt:
-        bot.send_message(message.chat.id, "💵 RETRAIT 30.000F\n✅ Groupe\n✅ 5 filleuls\n✅ 30.000F\nDemande dans Mini App.", reply_markup=inline_webapp())
-    elif "Classement" in txt:
-        bot.send_message(message.chat.id, "🏆 CLASSEMENT:\n1. @user1 - 125k\n2. @user2 - 98k\n3. @user3 - 75k")
-    elif "Mini-Jeux" in txt:
-        bot.send_message(message.chat.id, "🎮 Mini-jeux bientôt ! Gagne déjà avec pubs + parrainage.")
-    elif "Procédure" in txt:
-        bot.send_message(message.chat.id, "📋 PROCÉDURE:\n1. Pubs 50F\n2. Groupe 100F\n3. Invite 5 amis 500F\n4. 30.000F\n5. Retrait Wave")
-    else:
-        bot.send_message(message.chat.id, "Ouvre la Mini App V8 :", reply_markup=inline_webapp())
+def all_other(message):
+    bot.send_message(message.chat.id,
+        "👇 Choisis une option dans le menu ci-dessous :",
+        reply_markup=menu_principal())
 
 @app.route('/')
 def index():
-    return HTML_MINI_APP
+    return HTML_PAGE
 
 @app.route('/verif')
 def verif():
