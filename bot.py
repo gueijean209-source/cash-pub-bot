@@ -110,7 +110,4 @@ threading.Thread(target=run_bot).start()
 
 @app.route('/')
 def home():
-    return "Gains Faciles CI Bot en ligne !"
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000)
+        return '''<!DOCTYPE html><html><head><meta name="monetag" content="3d6f80bc1545f19f62998e82de8b3455"></head><body><h1>Gains Faciles CI Bot en ligne - Verifie Monetag</h1></body></html>'''
